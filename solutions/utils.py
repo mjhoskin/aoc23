@@ -13,10 +13,10 @@ def neo4j_config_local(password:str, port:int=7474) -> dict:
         }
     }
 
-def get_path(day, test: bool = False):
+def get_path(day, test: int = 0):
   ext = '.txt'
-  if test:
-    ext += '.test'
+  if test != 0:
+    ext += f'.test{test}'
   path = os.path.join(os.getcwd(), 'data', f'day{day}{ext}')
   
   return path
