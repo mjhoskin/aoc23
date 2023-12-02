@@ -60,58 +60,25 @@ def part_1(config:dict):
   return results.json()['results'][0]['data'][0]['row'][0]
 
 def part_2(config:dict):
-  pass
-  statements = [
-    """
-      MATCH (c1:calibration)-[:NEXT]->(c2)-[:NEXT]->(c3)-[:NEXT]->(c4)
-      WHERE c1.value+c2.value+c3.value+c4.value = 'nine'
-      SET c3.value = 9
-    """,
-    """
-      MATCH (c1:calibration)-[:NEXT]->(c2)-[:NEXT]->(c3)-[:NEXT]->(c4)-[:NEXT]->(c5)
-      WHERE c1.value+c2.value+c3.value+c4.value+c5.value = 'eight'
-      SET c3.value = 8
-    """,
-    """
-      MATCH (c1:calibration)-[:NEXT]->(c2)-[:NEXT]->(c3)-[:NEXT]->(c4)-[:NEXT]->(c5)
-      WHERE c1.value+c2.value+c3.value+c4.value+c5.value = 'seven'
-      SET c3.value = 7
-    """,
-    """
-      MATCH (c1:calibration)-[:NEXT]->(c2)-[:NEXT]->(c3)
-      WHERE c1.value+c2.value+c3.value = 'six'
-      SET c2.value = 6
-    """,
-    """
-      MATCH (c1:calibration)-[:NEXT]->(c2)-[:NEXT]->(c3)-[:NEXT]->(c4)
-      WHERE c1.value+c2.value+c3.value+c4.value = 'five'
-      SET c3.value = 5
-    """,
-    """    
-      MATCH (c1:calibration)-[:NEXT]->(c2)-[:NEXT]->(c3)-[:NEXT]->(c4)
-      WHERE c1.value+c2.value+c3.value+c4.value = 'four'
-      SET c3.value = 4
-    """,
-    """    
-      MATCH (c1:calibration)-[:NEXT]->(c2)-[:NEXT]->(c3)-[:NEXT]->(c4)-[:NEXT]->(c5)
-      WHERE c1.value+c2.value+c3.value+c4.value+c5.value = 'three'
-      SET c3.value = 3
-    """,
-    """    
-      MATCH (c1:calibration)-[:NEXT]->(c2)-[:NEXT]->(c3)
-      WHERE c1.value+c2.value+c3.value = 'two'
-      SET c2.value = 2
-    """,
-    """    
-      MATCH (c1:calibration)-[:NEXT]->(c2)-[:NEXT]->(c3)
-      WHERE c1.value+c2.value+c3.value = 'one'
-      SET c2.value = 1
-    """
-  ]
+  statement = """
+    MATCH (p:pull) 
+    WHERE NOT ((p)<-[:NEXT]-())
+    MATCH (p) -[*]-> (tgt) 
+    WITH p AS p,  p.game AS game, MAX(tgt.blue) AS b, MAX(tgt.green) AS g, MAX(tgt.red) AS r
+    WITH [p.red, r] AS rr,[p.green, g] as gg, [p.blue, b] as bb,  game as game
+    UNWIND rr AS r
+    WITH game, max(r) as r, gg, bb
+    UNWIND gg as g
+    WITH game, max(g) as g, r, bb
+    UNWIND bb as b 
+    WITH game, max(b) as b, r, g
+    WITH game, r * g * b AS power
+    RETURN SUM(power)
+  """
 
-  query = {"statements": [{"statement": statement} for statement in statements]}
+  query = {"statements": [{"statement": statement}]}
   results = u.post(config, query)
-  return results
+  return results.json()['results'][0]['data'][0]['row'][0]
 
 if __name__ == "__main__":
   config = u.neo4j_config_local(os.environ['NEO4J_PASSWORD_LOCAL'])
@@ -119,10 +86,10 @@ if __name__ == "__main__":
   clear_neo(config)
   load_to_neo(config, test=1)
   print(f"Day 1 Part 1 test: expected: {8}, actual: {part_1(config)}")
-  # print(f"Day 1 Part 2 test: expected: {8}, actual: {part_2(config)}") 
+  print(f"Day 1 Part 2 test: expected: {2286}, actual: {part_2(config)}") 
   clear_neo(config)
 
   load_to_neo(config)
   print(f"Day 1 Part 1 actual: {part_1(config)}") # 3099
-  print(f"Day 1 Part 2 actual: {part_2(config)}") # 53340
+  print(f"Day 1 Part 2 actual: {part_2(config)}") # 72970
   clear_neo(config)
