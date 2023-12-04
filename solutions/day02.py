@@ -19,7 +19,7 @@ def build_statement(row: str) -> str:
     statement += f"CREATE (v{idx}_{game_id})-[:NEXT]->(v{idx+1}_{game_id})"
   return statement
 
-def load_to_neo(config, test: bool = False):
+def load_to_neo(config, test: int = 0):
   path = u.get_path(DAY, test=test)
 
   with open(path, 'r') as f:
